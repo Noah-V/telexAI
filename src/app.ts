@@ -15,8 +15,12 @@ app.listen(port, () => {
 	return console.log(`Express is listening at http://localhost:${port}`);
 });
 
-app.post("/webhook", (req, res) => {
+app.post("/webhook", (req: any, res: any) => {
+	const { message, settings } = req.body;
+
 	console.log("body", req.body);
+	console.log("settings:", settings);
+	return res.json({ status: "success", message: message });
 });
 
 app.get("/integration", (req, res) => {
