@@ -9,9 +9,11 @@ app.get("/", (req, res) => {
 });
 
 app.listen(port, () => {
+	console.log("Default config on startup:", defaultConfig);
 	return console.log(`Express is listening at http://localhost:${port}`);
 });
 
 app.get("/integration", (req, res) => {
+	console.log("Trying integration rn");
 	res.send(defaultConfig);
 });
