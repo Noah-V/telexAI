@@ -25,5 +25,5 @@ app.post("/webhook", (req: any, res: any) => {
 
 app.get("/integration", (req, res) => {
 	console.log("Trying integration rn");
-	res.send(defaultConfig);
+	res.send(integrationConfig);
 });
