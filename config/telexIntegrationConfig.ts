@@ -8,7 +8,7 @@ export const integrationConfig = {
 			app_description: "Telex's own very AI",
 			app_logo: "https://docs.telex.im/img/telex.webp",
 			app_name: "Telex AI",
-			app_url: "https://fc41tnk2-3000.uks1.devtunnels.ms",
+			app_url: "https://telexai-1.onrender.com",
 			background_color: "#FFFFFF",
 		},
 		is_active: true,
@@ -66,7 +66,6 @@ export const integrationConfig = {
 				required: false,
 			},
 		],
-		target_url: "https://fc41tnk2-3000.uks1.devtunnels.ms/webhook",
-		tick_url: "https://fc41tnk2-3000.uks1.devtunnels.ms/integration",
+		target_url: "https://telexai-1.onrender.com/webhook",
 	},
 };
