@@ -5,13 +5,12 @@ const app = express();
 const port = 3000;
 
 app.get("/", (req, res) => {
-	// res.send("Hello World!");
-	res.send(defaultConfig);
+	res.send("Hello World!");
 });
 
 app.listen(port, () => {
-	return console.log("Default config on startup:", defaultConfig);
-	// return console.log(`Express is listening at http://localhost:${port}`);
+	// return console.log("Default config on startup:", defaultConfig);
+	return console.log(`Express is listening at http://localhost:${port}`);
 });
 
 app.get("/integration", (req, res) => {
