@@ -42,79 +42,71 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 	// console.log("body", req.body);
 	// console.log("settings:", settings);
 	// return res.json({ status: "success", message: message });
+	const payload: ModifierIntegrationPayload = req.body;
+
+	const triggerAI =
+		payload.settings.find((setting) => setting.label === "@noah")
+			?.default || "@noah";
+
+	const contextDepth = Number(
+		payload.settings.find((setting) => setting.label === "contextDepth")
+			?.default || 10
+	);
+
+	//const debugMode
+
+	if (payload.message.includes(triggerAI)) {
+		res.json({ message: payload.message });
+	}
+
+	const channelID = "default-channel";
+
+	const userQuery = payload.message.replace(triggerAI, "").trim();
+
 	try {
-		const payload: ModifierIntegrationPayload = req.body;
+		const message: Message = {
+			id: generateUniqueId(),
+			content: userQuery,
+			timestamp: Date.now(),
+			sender: "user",
+		};
 
-		const triggerAI =
-			payload.settings.find((setting) => setting.label === "@noah")
-				?.default || "@noah";
+		const getAnswer: string = await ai.processMessage(userQuery, message);
 
-		const contextDepth = Number(
-			payload.settings.find((setting) => setting.label === "contextDepth")
-				?.default || 10
-		);
-
-		//const debugMode
-
-		if (payload.message.includes(triggerAI)) {
-			res.json({ message: payload.message });
-		}
-
-		const channelID = "default-channel";
-
-		const userQuery = payload.message.replace(triggerAI, "").trim();
-
-		try {
-			const message: Message = {
-				id: generateUniqueId(),
-				content: userQuery,
-				timestamp: Date.now(),
-				sender: "user",
-			};
-
-			const getAnswer: string = await ai.processMessage(
-				userQuery,
-				message
-			);
-
-			const response = await Promise.race([
-				// answer,
-				// await telexService.telexResponder(
-				// 	payload.channelID,
-				// 	await answer
-				// ),
-				// new Promise((accept, reject) =>
-				// 	setTimeout(() => reject(new Error("Timeout")), 900)
-				// ),
-				// (async () => {
-				// 	const answer = await getAnswer;
-				// 	await telexService.telexResponder(
-				// 		payload.channelID,
-				// 		answer
-				// 	); // Send response to Telex
-				// 	return answer; // Return AI-generated response
-				// })(),
-				// (async () => {
-				// 	await new Promise((resolve) => setTimeout(resolve, 900));
-				// 	return "Sorry, I couldn't generate a response in time.";
-				// })(),
-				ai.processMessage(channelID, message),
-				new Promise<string>((_, reject) =>
-					setTimeout(() => reject(new Error("Timeout")), 900)
-				),
-			]);
-			res.json({ message: response });
-		} catch (error) {
-			console.error("Webhook error", error);
-			if (!res.headersSent) {
-				res.status(500).json({
-					error: error.message || "Internal Server Error",
-				});
-			}
-		}
+		const response = await Promise.race([
+			// answer,
+			// await telexService.telexResponder(
+			// 	payload.channelID,
+			// 	await answer
+			// ),
+			// new Promise((accept, reject) =>
+			// 	setTimeout(() => reject(new Error("Timeout")), 900)
+			// ),
+			// (async () => {
+			// 	const answer = await getAnswer;
+			// 	await telexService.telexResponder(
+			// 		payload.channelID,
+			// 		answer
+			// 	); // Send response to Telex
+			// 	return answer; // Return AI-generated response
+			// })(),
+			// (async () => {
+			// 	await new Promise((resolve) => setTimeout(resolve, 900));
+			// 	return "Sorry, I couldn't generate a response in time.";
+			// })(),
+			ai.processMessage(channelID, message),
+			new Promise<string>((_, reject) =>
+				setTimeout(() => reject(new Error("Timeout")), 900)
+			),
+		]);
+		res.json({ message: response });
 	} catch (error) {
-		console.error("Webhook error:", error);
-		res.json({ message: req.body.message });
+		console.error("Webhook error", error);
+		if (!res.headersSent) {
+			res.status(500).json({
+				error: error.message || "Internal Server Error",
+			});
+		}
 	}
 });
 
