@@ -23,7 +23,6 @@ const telexService = new TelexService();
 app.use(express.json());
 
 app.use(
-	"*",
 	cors({
 		origin: "*",
 		maxAge: 600,
@@ -71,20 +70,34 @@ app.post("/webhook", async (req: any, res: any) => {
 				sender: "user",
 			};
 
-			var answer: string;
+			const getAnswer: string = await ai.processMessage(
+				userQuery,
+				message,
+				payload.channelID
+			);
 
 			const response = await Promise.race([
-				(answer = await ai.processMessage(
-					userQuery,
-					message,
-					payload.channelID
-				)),
-				await telexService.telexResponder(payload.channelID, answer),
-				new Promise((accept, reject) =>
-					setTimeout(() => reject(new Error("Timeout")), 900)
-				),
+				// answer,
+				// await telexService.telexResponder(
+				// 	payload.channelID,
+				// 	await answer
+				// ),
+				// new Promise((accept, reject) =>
+				// 	setTimeout(() => reject(new Error("Timeout")), 900)
+				// ),
+				(async () => {
+					const answer = await getAnswer;
+					await telexService.telexResponder(
+						payload.channelID,
+						answer
+					); // Send response to Telex
+					return answer; // Return AI-generated response
+				})(),
+				(async () => {
+					await new Promise((resolve) => setTimeout(resolve, 900));
+					return "Sorry, I couldn't generate a response in time.";
+				})(),
 			]);
-			await telexService.telexResponder(payload.channelID, answer);
 			return res.json({ message: response });
 		} catch (error) {
 			console.error("Timeout", error);
@@ -96,7 +109,6 @@ app.post("/webhook", async (req: any, res: any) => {
 	}
 });
 
-app.get("/integration", (req, res) => {
-	console.log("Trying integration rn");
-	res.send(integrationConfig);
+app.get("/integration", (req: Request, res: Response) => {
+	res.json(integrationConfig);
 });
