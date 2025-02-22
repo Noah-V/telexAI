@@ -47,9 +47,9 @@ export class AI {
 	// 	return response.text();
 	// }
 
-	async processMessage(channelID: string, message: Message): Promise<string> {
+	async processMessage(channelID, question: Message): Promise<string> {
 		try {
-			await this.storage.addMessage(channelID, message);
+			await this.storage.addMessage(channelID, question);
 
 			const channelContext = await this.storage.getChannelContext(
 				channelID
@@ -63,7 +63,7 @@ export class AI {
 			----
 			${contextString}
 			----
-			User: ${message.content}
+			User: ${question.content}
 			AI: 
 	
 			`;

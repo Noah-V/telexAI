@@ -1,7 +1,6 @@
 import { TelexResponse } from "../types/types";
 
 export class TelexService {
-	private apiKey: string;
 	private baseUrl: "https://ping.telex.im/";
 
 	async telexResponder(channelID: string, content: string) {

@@ -6,7 +6,7 @@ export interface Message {
 }
 
 export interface ModifierIntegrationPayload {
-	channelID: string;
+	channel_id: string;
 	message: string;
 	settings: Array<{
 		label: string;
