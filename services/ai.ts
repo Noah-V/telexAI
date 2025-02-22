@@ -59,7 +59,7 @@ export class AI {
 				channelID
 			);
 
-			//applying context
+			// applying context
 			const contextString = this.context(channelContext);
 
 			const prompt = `I am noah, I know. I am your all knowing "assistant" on telex
@@ -67,7 +67,7 @@ export class AI {
 			----
 			${contextString}
 			----
-			User: ${message.content}
+			User: ${question}
 			AI: 
 	
 			`;
