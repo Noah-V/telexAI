@@ -47,11 +47,7 @@ export class AI {
 	// 	return response.text();
 	// }
 
-	async processMessage(
-		question: string,
-		message: Message,
-		channelID: string
-	): Promise<string> {
+	async processMessage(channelID: string, message: Message): Promise<string> {
 		try {
 			await this.storage.addMessage(channelID, message);
 
@@ -67,12 +63,12 @@ export class AI {
 			----
 			${contextString}
 			----
-			User: ${question}
+			User: ${message.content}
 			AI: 
 	
 			`;
 
-			const result = await this.model.generateContent({ prompt });
+			const result = await this.model.generateContent([{ prompt }]);
 			const response = await result.response;
 			if (!response)
 				throw new Error(

@@ -60,20 +60,21 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 			res.json({ message: payload.message });
 		}
 
+		const channelID = "default-channel";
+
 		const userQuery = payload.message.replace(triggerAI, "").trim();
 
 		try {
 			const message: Message = {
 				id: generateUniqueId(),
-				content: payload.message,
+				content: userQuery,
 				timestamp: Date.now(),
 				sender: "user",
 			};
 
 			const getAnswer: string = await ai.processMessage(
 				userQuery,
-				message,
-				payload.channelID
+				message
 			);
 
 			const response = await Promise.race([
@@ -85,23 +86,31 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 				// new Promise((accept, reject) =>
 				// 	setTimeout(() => reject(new Error("Timeout")), 900)
 				// ),
-				(async () => {
-					const answer = await getAnswer;
-					await telexService.telexResponder(
-						payload.channelID,
-						answer
-					); // Send response to Telex
-					return answer; // Return AI-generated response
-				})(),
-				(async () => {
-					await new Promise((resolve) => setTimeout(resolve, 900));
-					return "Sorry, I couldn't generate a response in time.";
-				})(),
+				// (async () => {
+				// 	const answer = await getAnswer;
+				// 	await telexService.telexResponder(
+				// 		payload.channelID,
+				// 		answer
+				// 	); // Send response to Telex
+				// 	return answer; // Return AI-generated response
+				// })(),
+				// (async () => {
+				// 	await new Promise((resolve) => setTimeout(resolve, 900));
+				// 	return "Sorry, I couldn't generate a response in time.";
+				// })(),
+				ai.processMessage(channelID, message),
+				new Promise<string>((_, reject) =>
+					setTimeout(() => reject(new Error("Timeout")), 900)
+				),
 			]);
 			res.json({ message: response });
 		} catch (error) {
-			console.error("Timeout", error);
-			res.json({ message: payload.message });
+			console.error("Webhook error", error);
+			if (!res.headersSent) {
+				res.status(500).json({
+					error: error.message || "Internal Server Error",
+				});
+			}
 		}
 	} catch (error) {
 		console.error("Webhook error:", error);
