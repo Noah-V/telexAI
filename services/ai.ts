@@ -68,7 +68,12 @@ export class AI {
 	
 			`;
 
-			const result = await this.model.generateContent([{ prompt }]);
+			const result = await this.model.generateContent({
+				prompt: {
+					text: prompt,
+				},
+			});
+
 			const response = await result.response;
 			if (!response)
 				throw new Error(
