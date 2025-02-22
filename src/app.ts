@@ -37,7 +37,7 @@ app.listen(port, () => {
 	return console.log(`Express is listening at http://localhost:${port}`);
 });
 
-app.post("/webhook", async (req: any, res: any) => {
+app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 	// const { message, settings } = req.body;
 	// console.log("body", req.body);
 	// console.log("settings:", settings);
@@ -57,7 +57,7 @@ app.post("/webhook", async (req: any, res: any) => {
 		//const debugMode
 
 		if (payload.message.includes(triggerAI)) {
-			return res.json({ message: payload.message });
+			res.json({ message: payload.message });
 		}
 
 		const userQuery = payload.message.replace(triggerAI, "").trim();
@@ -98,14 +98,14 @@ app.post("/webhook", async (req: any, res: any) => {
 					return "Sorry, I couldn't generate a response in time.";
 				})(),
 			]);
-			return res.json({ message: response });
+			res.json({ message: response });
 		} catch (error) {
 			console.error("Timeout", error);
-			return res.json({ message: payload.message });
+			res.json({ message: payload.message });
 		}
 	} catch (error) {
 		console.error("Webhook error:", error);
-		return res.json({ message: req.body.message });
+		res.json({ message: req.body.message });
 	}
 });
 
