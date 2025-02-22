@@ -85,7 +85,7 @@ app.post("/webhook", async (req: any, res: any) => {
 				),
 			]);
 			await telexService.telexResponder(payload.channelID, answer);
-			return res.json({ message: res });
+			return res.json({ message: response });
 		} catch (error) {
 			console.error("Timeout", error);
 			return res.json({ message: payload.message });
