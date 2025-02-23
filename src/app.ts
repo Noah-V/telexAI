@@ -39,37 +39,6 @@ app.listen(port, () => {
 
 const AiProcessing = async (payload: ModifierIntegrationPayload) => {
 	try {
-		const triggerAI =
-			payload.settings.find((setting) => setting.label === "@telex-ai")
-				?.default || "@telex-ai";
-
-		const contextDepth = Number(
-			payload.settings.find((setting) => setting.label === "contextDepth")
-				?.default || 0
-		);
-
-		if (!payload.message.includes(triggerAI)) {
-			console.log("Message does not start with trigger");
-			return;
-		}
-
-		const channelID = payload.channel_id;
-
-		const userQuery = payload.message.replace(triggerAI, "").trim();
-
-		const message: Message = {
-			id: generateUniqueId(),
-			content: userQuery,
-			timestamp: Date.now(),
-			sender: "user",
-		};
-
-		const aiAnswer = await ai.processMessage(
-			channelID,
-			message,
-			contextDepth
-		);
-		await telexService.telexResponder(channelID, aiAnswer);
 	} catch (error) {
 		console.error("Error processing AI response:", error);
 		await telexService.telexResponder(
@@ -90,65 +59,76 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 		payload.settings.find((setting) => setting.label === "@telex-ai")
 			?.default || "@telex-ai";
 
+	const contextDepth = Number(
+		payload.settings.find((setting) => setting.label === "contextDepth")
+			?.default || 0
+	);
+
+	const channelID = payload.channel_id;
+
+	const userQuery = payload.message.replace(triggerAI, "").trim();
+
 	if (!payload.message.includes(triggerAI)) {
-		res.json({ status: "skipped" });
+		return;
 	}
 
-	res.json({
-		status: "success",
-		message: "Processing your request...",
-		event_name: "message_formatted",
-	});
+	const message: Message = {
+		id: generateUniqueId(),
+		content: userQuery,
+		timestamp: Date.now(),
+		sender: "user",
+	};
 
-	AiProcessing(payload).catch((error) => {
-		console.error("Failed to process AI response:", error);
-	});
+	const timer = Date.now();
 
-	return;
+	try {
+		const timeoutPromise = new Promise((_, reject) => {
+			setTimeout(
+				() => reject(new Error("Timeout")),
+				1000 - (Date.now() - timer)
+			);
+		});
 
-	// try {
-	// 	const getAnswer: string = await ai.processMessage(
-	// 		channelID,
-	// 		message,
-	// 		contextDepth
-	// 	);
-	// 	console.log("AI Reply: ", getAnswer);
+		const aiResponsePromise = ai.processMessage(
+			channelID,
+			message,
+			contextDepth
+		);
 
-	// 	const response = await Promise.race([
-	// 		// answer,
-	// 		// await telexService.telexResponder(
-	// 		// 	payload.channelID,
-	// 		// 	await answer
-	// 		// ),
-	// 		// new Promise((accept, reject) =>
-	// 		// 	setTimeout(() => reject(new Error("Timeout")), 900)
-	// 		// ),
-	// 		// (async () => {
-	// 		// 	const answer = await getAnswer;
-	// 		// 	await telexService.telexResponder(
-	// 		// 		payload.channelID,
-	// 		// 		answer
-	// 		// 	); // Send response to Telex
-	// 		// 	return answer; // Return AI-generated response
-	// 		// })(),
-	// 		// (async () => {
-	// 		// 	await new Promise((resolve) => setTimeout(resolve, 900));
-	// 		// 	return "Sorry, I couldn't generate a response in time.";
-	// 		// })(),
-	// 		telexService.telexResponder(channelID, getAnswer),
-	// 		new Promise<string>((_, reject) =>
-	// 			setTimeout(() => reject(new Error("Timeout")), 900)
-	// 		),
-	// 	]);
-	// 	res.json({ status: "success", message: response });
-	// } catch (error) {
-	// 	console.error("Webhook error", error);
-	// 	if (!res.headersSent) {
-	// 		res.status(500).json({
-	// 			error: error.message || "Internal Server Error",
-	// 		});
-	// 	}
-	// }
+		try {
+			// Race between AI response and timeout
+			const aiAnswer = await Promise.race([
+				aiResponsePromise,
+				timeoutPromise,
+			]);
+			await telexService.telexResponder(channelID, aiAnswer as string);
+		} catch (timeoutError) {
+			// If we hit timeout, send "Processing..." message
+			await telexService.telexResponder(
+				channelID,
+				"Processing your request..."
+			);
+
+			// Continue processing AI response in background
+			aiResponsePromise
+				.then(async (aiAnswer) => {
+					await telexService.telexResponder(channelID, aiAnswer);
+				})
+				.catch(async (error) => {
+					console.error("AI Processing Error:", error);
+					await telexService.telexResponder(
+						channelID,
+						"Sorry, I encountered an error processing your request."
+					);
+				});
+		}
+	} catch (error) {
+		console.error("Error processing message:", error);
+		await telexService.telexResponder(
+			channelID,
+			"Sorry, I encountered an error processing your request."
+		);
+	}
 });
 
 app.get("/integration", (req: Request, res: Response) => {
