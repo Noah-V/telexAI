@@ -17,7 +17,7 @@ export class TelexService {
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({ status: "success", payload }),
+				body: JSON.stringify(payload),
 			});
 
 			if (!result.ok) {
