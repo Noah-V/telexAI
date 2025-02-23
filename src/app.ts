@@ -95,6 +95,8 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 
 		if (answer !== null) {
 			await telexService.telexResponder(channelID, answer);
+			res.json({ status: "success", message: answer });
+			return;
 		} else {
 			res.json({
 				status: "success",
@@ -107,6 +109,7 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 				.catch((error) =>
 					console.error("AI Processing error: ", error)
 				);
+			return;
 		}
 	} catch (error) {
 		console.error("Webhook error: ", error);
