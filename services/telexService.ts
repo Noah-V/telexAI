@@ -1,7 +1,7 @@
 import { TelexResponse } from "../types/types";
 
 export class TelexService {
-	private baseUrl = "https://ping.telex.im";
+	private baseUrl = "https://ping.telex.im/v1/webhooks";
 
 	async telexResponder(channelID: string, content: string) {
 		const payload: TelexResponse = {
@@ -12,16 +12,13 @@ export class TelexService {
 		};
 
 		try {
-			const result = await fetch(
-				`${this.baseUrl}/v1/webhooks/${channelID}`,
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify(payload),
-				}
-			);
+			const result = await fetch(`${this.baseUrl}/${channelID}`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(payload),
+			});
 
 			if (!result.ok) {
 				throw new Error(`Failed to send message: ${result.statusText}`);
