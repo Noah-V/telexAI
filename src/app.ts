@@ -55,11 +55,11 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 
 	//const debugMode
 
-	if (!payload.message.includes(triggerAI)) {
+	if (payload.message.includes(triggerAI)) {
 		res.json({ message: payload.message });
 	}
 
-	console.log("Channel ID: ", payload.channel_id);
+	const channelID = payload.channel_id;
 
 	const userQuery = payload.message.replace(triggerAI, "").trim();
 
@@ -71,10 +71,7 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 			sender: "user",
 		};
 
-		const getAnswer: string = await ai.processMessage(
-			payload.channel_id,
-			message
-		);
+		const getAnswer: string = await ai.processMessage(channelID, message);
 		console.log("AI Reply: ", getAnswer);
 
 		const response = await Promise.race([
@@ -98,7 +95,7 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 			// 	await new Promise((resolve) => setTimeout(resolve, 900));
 			// 	return "Sorry, I couldn't generate a response in time.";
 			// })(),
-			telexService.telexResponder(payload.channel_id, getAnswer),
+			telexService.telexResponder(channelID, getAnswer),
 			new Promise<string>((_, reject) =>
 				setTimeout(() => reject(new Error("Timeout")), 900)
 			),
