@@ -56,6 +56,9 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 	//const debugMode
 
 	if (!payload.message.startsWith(triggerAI)) {
+		console.log(
+			"Message does not start with trigger; returning immediately."
+		);
 		res.json({ message: payload.message });
 		return;
 	}
