@@ -1,7 +1,7 @@
 import { TelexResponse } from "../types/types";
 
 export class TelexService {
-	private baseUrl: "https://ping.telex.im/";
+	private baseUrl: "https://ping.telex.im";
 
 	async telexResponder(channelID: string, content: string) {
 		const payload: TelexResponse = {
@@ -12,9 +12,8 @@ export class TelexService {
 		};
 
 		try {
-			const url = `${this.baseUrl}/${channelID}`;
 			const result = await fetch(
-				`${this.baseUrl}/v1/return/${channelID}`,
+				`${this.baseUrl}/v1/webhooks/${channelID}`,
 				{
 					method: "POST",
 					headers: {
