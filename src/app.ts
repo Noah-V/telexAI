@@ -55,7 +55,7 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 
 	//const debugMode
 
-	if (!payload.message.includes(triggerAI)) {
+	if (!payload.message.trim().startsWith(triggerAI)) {
 		console.log(
 			"Message does not start with trigger; returning immediately."
 		);
@@ -100,7 +100,10 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 			telexService.telexResponder(channelID, answer);
 			res.json({ status: "success", message: answer });
 		} else {
-			res.json({ status: "success", message: "Processing..." });
+			res.json({
+				status: "success",
+				message: payload.message || "Processing...",
+			});
 			aiProcessPromise
 				.then((aiAnswer: string) => {
 					return telexService.telexResponder(channelID, aiAnswer);
