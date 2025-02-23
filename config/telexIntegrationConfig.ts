@@ -25,9 +25,8 @@ export const integrationConfig = {
 			{
 				label: "aiTriggerWord",
 				type: "text",
-				description:
-					"Word to trigger AI responses (default: @telex-ai)",
-				default: "@telex-ai",
+				description: "Word to trigger AI responses (default: @noah)",
+				default: "@noah",
 				required: true,
 			},
 			{
@@ -35,7 +34,7 @@ export const integrationConfig = {
 				type: "number",
 				description:
 					"Number of messages to maintain for context (max 50)",
-				default: 10,
+				default: 0,
 				required: false,
 			},
 			{
@@ -43,26 +42,6 @@ export const integrationConfig = {
 				type: "checkbox",
 				description: "Enable detailed debugging output",
 				default: false,
-				required: false,
-			},
-			{
-				label: "aiPersonality",
-				type: "dropdown",
-				description: "AI response style",
-				options: ["technical", "friendly", "concise", "detailed"],
-				default: "technical",
-				required: false,
-			},
-			{
-				label: "teamNotification",
-				type: "multi-select",
-				description: "When to notify team members",
-				options: [
-					"critical-errors",
-					"debugging-sessions",
-					"ai-mentions",
-				],
-				default: ["critical-errors"],
 				required: false,
 			},
 		],

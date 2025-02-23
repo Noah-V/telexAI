@@ -47,9 +47,13 @@ export class AI {
 	// 	return response.text();
 	// }
 
-	async processMessage(channelID, question: Message): Promise<string> {
+	async processMessage(
+		channelID,
+		question: Message,
+		contextDepth?: number
+	): Promise<string> {
 		try {
-			await this.storage.addMessage(channelID, question);
+			await this.storage.addMessage(channelID, question, contextDepth);
 
 			const channelContext = await this.storage.getChannelContext(
 				channelID

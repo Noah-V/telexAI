@@ -8,13 +8,23 @@ export class MessageStorage {
 		this.messages = new Map();
 	}
 
-	addMessage(channelID: string, message: Message): Promise<void> {
+	addMessage(
+		channelID: string,
+		message: Message,
+		CUSTOM_LIMIT?: number
+	): Promise<void> {
 		let channelMessages = this.messages.get(channelID) || [];
 
 		channelMessages.push(message);
 
-		if (channelMessages.length > this.MESSAGE_LIMIT) {
-			channelMessages = channelMessages.slice(-this.MESSAGE_LIMIT);
+		if (CUSTOM_LIMIT > 0) {
+			if (channelMessages.length > CUSTOM_LIMIT) {
+				channelMessages = channelMessages.slice(-CUSTOM_LIMIT);
+			}
+		} else {
+			if (channelMessages.length > this.MESSAGE_LIMIT) {
+				channelMessages = channelMessages.slice(-this.MESSAGE_LIMIT);
+			}
 		}
 
 		this.messages.set(channelID, channelMessages);

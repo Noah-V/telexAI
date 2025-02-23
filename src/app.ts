@@ -50,7 +50,7 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 
 	const contextDepth = Number(
 		payload.settings.find((setting) => setting.label === "contextDepth")
-			?.default || 10
+			?.default || 0
 	);
 
 	//const debugMode
@@ -71,7 +71,11 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 			sender: "user",
 		};
 
-		const getAnswer: string = await ai.processMessage(channelID, message);
+		const getAnswer: string = await ai.processMessage(
+			channelID,
+			message,
+			contextDepth
+		);
 		console.log("AI Reply: ", getAnswer);
 
 		const response = await Promise.race([
