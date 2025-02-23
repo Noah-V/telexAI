@@ -1,0 +1,30 @@
+Alright so based on this telex project, that's the sample json i got from telex's docs for a modifier integration. So could you see if there's any need to update the project based on this information, and also you could do the json for me to see too. THis is an excerpt from the telex docs. 
+
+Modifier integrations are integrations that modify new messages entering a channel. They are not time bound and do not send messages to the channel at set intervals. Examples of modifier integrations include: Profanity filter, capitalizer, text translator, etc. A hard limit of 1 second is set for modifier integrations, so this means they must return a response within 1 second of receiving a message, else their contribution is skipped. Modifier integrations do not have the concept of a return_url neither do they have a tick_url. They only have a target_url endpoint where they receive new messages entering the channel. They receive messages in this format (at the /target_url):
+
+```
+{
+  "message": "message",
+  "settings": [
+    {
+      "label": "setting_label",
+      "type": "text",
+      "default": "setting_value",
+      "required": true
+    }
+    ...
+  ]
+}
+
+```
+
+The format above let's them know what to do with the message. For example, a profanity filter integration will receive a message and the settings will contain the list of words to mask. The integration responds back when it is called with the modified message in the format below:
+
+```
+{
+  "message": "modified_message"
+}
+
+```
+
+Any deviation from the format above will result in the integration being skipped or its contribution not being added to the channel.
