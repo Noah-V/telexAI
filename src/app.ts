@@ -70,6 +70,7 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 	// res.json({ status: "success", message: "Processing..." });
 
 	try {
+		res.json({ message: payload.message });
 		const message: Message = {
 			id: generateUniqueId(),
 			content: userQuery,
