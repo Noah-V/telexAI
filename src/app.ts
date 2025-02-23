@@ -103,7 +103,7 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 			res.json({ status: "success", message: "Processing..." });
 			aiProcessPromise
 				.then((aiAnswer: string) => {
-					telexService.telexResponder(channelID, aiAnswer);
+					return telexService.telexResponder(channelID, aiAnswer);
 				})
 				.catch((error) =>
 					console.error("AI Processing error: ", error)
