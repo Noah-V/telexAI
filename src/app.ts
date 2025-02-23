@@ -73,61 +73,14 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 		sender: "user",
 	};
 
-	try {
-		const aiProcessPromise = ai.processMessage(
-			channelID,
-			message,
-			contextDepth
-		);
-
-		console.log("AI Reply: ", aiProcessPromise);
-
-		const timeoutPromise = new Promise<string | null>((resolve) => {
-			setTimeout(() => resolve(null), 900);
+	ai.processMessage(channelID, message, contextDepth)
+		.then((aiAnswer: string) => {
+			console.log("AI Reply:", aiAnswer);
+			return telexService.telexResponder(channelID, aiAnswer);
+		})
+		.catch((error) => {
+			console.error("Background AI processing error:", error);
 		});
-
-		let answer: string | null = await Promise.race([
-			aiProcessPromise,
-			timeoutPromise,
-		]);
-
-		console.log("Answer: ", answer);
-
-		if (answer !== null) {
-			await telexService.telexResponder(channelID, answer);
-			res.json({ status: "success", message: answer });
-			return;
-		} else {
-			res.json({
-				status: "success",
-				message: payload.message || "Processing...",
-			});
-			async () => {
-				try {
-					const aiAnswer = await aiProcessPromise;
-					await telexService.telexResponder(channelID, aiAnswer);
-				} catch (error) {
-					console.error("Error with background processes");
-				}
-			};
-			// aiProcessPromise
-			// 	.then((aiAnswer: string) => {
-			// 		return telexService.telexResponder(channelID, aiAnswer);
-			// 	})
-			// 	.catch((error) =>
-			// 		console.error("AI Processing error: ", error)
-			// 	);
-			// return;
-		}
-	} catch (error) {
-		console.error("Webhook error: ", error);
-		if (!res.headersSent) {
-			res.status(500).json({
-				status: "error",
-			});
-			return;
-		}
-	}
 
 	// try {
 	// 	const getAnswer: string = await ai.processMessage(
