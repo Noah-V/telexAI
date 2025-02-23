@@ -57,6 +57,7 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 
 	if (!payload.message.startsWith(triggerAI)) {
 		res.json({ message: payload.message });
+		return;
 	}
 
 	const channelID = payload.channel_id;
