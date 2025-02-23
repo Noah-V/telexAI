@@ -97,7 +97,7 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 		console.log("Answer: ", answer);
 
 		if (answer !== null) {
-			await telexService.telexResponder(channelID, answer);
+			telexService.telexResponder(channelID, answer);
 			res.json({ status: "success", message: answer });
 		} else {
 			res.json({ status: "success", message: "Processing..." });
