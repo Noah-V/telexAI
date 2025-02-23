@@ -80,6 +80,8 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 			contextDepth
 		);
 
+		console.log("AI Reply: ", aiProcessPromise);
+
 		const timeoutPromise = new Promise<string | null>((resolve) => {
 			setTimeout(() => resolve(null), 900);
 		});
@@ -89,6 +91,8 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 			timeoutPromise,
 		]);
 
+		console.log("Answer: ", answer);
+
 		if (answer !== null) {
 			await telexService.telexResponder(channelID, answer);
 			res.json({ status: "success", message: answer });
@@ -97,7 +101,6 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 			aiProcessPromise
 				.then((aiAnswer: string) => {
 					telexService.telexResponder(channelID, aiAnswer);
-					return;
 				})
 				.catch((error) =>
 					console.error("AI Processing error: ", error)
