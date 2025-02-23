@@ -55,11 +55,10 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 
 	//const debugMode
 
+	res.json({ status: "success", message: payload.message });
+
 	if (!payload.message.includes(triggerAI)) {
-		console.log(
-			"Message does not start with trigger; returning immediately."
-		);
-		res.json({ message: payload.message });
+		console.log("Message does not start with trigger");
 		return;
 	}
 
@@ -67,16 +66,14 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 
 	const userQuery = payload.message.replace(triggerAI, "").trim();
 
-	// res.json({ status: "success", message: "Processing..." });
+	const message: Message = {
+		id: generateUniqueId(),
+		content: userQuery,
+		timestamp: Date.now(),
+		sender: "user",
+	};
 
 	try {
-		const message: Message = {
-			id: generateUniqueId(),
-			content: userQuery,
-			timestamp: Date.now(),
-			sender: "user",
-		};
-
 		const aiProcessPromise = ai.processMessage(
 			channelID,
 			message,
@@ -97,8 +94,7 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 		console.log("Answer: ", answer);
 
 		if (answer !== null) {
-			telexService.telexResponder(channelID, answer);
-			res.json({ status: "success", message: answer });
+			await telexService.telexResponder(channelID, answer);
 		} else {
 			res.json({
 				status: "success",
