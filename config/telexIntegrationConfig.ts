@@ -15,10 +15,9 @@ export const integrationConfig = {
 		integration_type: "modifier",
 		integration_category: "AI & Machine Learning",
 		key_features: [
-			"Feature description 1.",
-			"Feature description 2.",
-			"Feature description 3.",
-			"Feature description 4.",
+			"AI Assistance",
+			"Chat GPT who?",
+			"Debugging Assistance(coming soon)",
 		],
 		author: "Noah Vikoo",
 		settings: [
