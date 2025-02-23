@@ -102,14 +102,22 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 				status: "success",
 				message: payload.message || "Processing...",
 			});
-			aiProcessPromise
-				.then((aiAnswer: string) => {
-					return telexService.telexResponder(channelID, aiAnswer);
-				})
-				.catch((error) =>
-					console.error("AI Processing error: ", error)
-				);
-			return;
+			async () => {
+				try {
+					const aiAnswer = await aiProcessPromise;
+					await telexService.telexResponder(channelID, aiAnswer);
+				} catch (error) {
+					console.error("Error with background processes");
+				}
+			};
+			// aiProcessPromise
+			// 	.then((aiAnswer: string) => {
+			// 		return telexService.telexResponder(channelID, aiAnswer);
+			// 	})
+			// 	.catch((error) =>
+			// 		console.error("AI Processing error: ", error)
+			// 	);
+			// return;
 		}
 	} catch (error) {
 		console.error("Webhook error: ", error);
