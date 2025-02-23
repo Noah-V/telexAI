@@ -38,33 +38,45 @@ app.listen(port, () => {
 });
 
 const AiProcessing = async (payload: ModifierIntegrationPayload) => {
-	const triggerAI =
-		payload.settings.find((setting) => setting.label === "@telex-ai")
-			?.default || "@telex-ai";
+	try {
+		const triggerAI =
+			payload.settings.find((setting) => setting.label === "@telex-ai")
+				?.default || "@telex-ai";
 
-	const contextDepth = Number(
-		payload.settings.find((setting) => setting.label === "contextDepth")
-			?.default || 0
-	);
+		const contextDepth = Number(
+			payload.settings.find((setting) => setting.label === "contextDepth")
+				?.default || 0
+		);
 
-	if (!payload.message.includes(triggerAI)) {
-		console.log("Message does not start with trigger");
-		return;
+		if (!payload.message.includes(triggerAI)) {
+			console.log("Message does not start with trigger");
+			return;
+		}
+
+		const channelID = payload.channel_id;
+
+		const userQuery = payload.message.replace(triggerAI, "").trim();
+
+		const message: Message = {
+			id: generateUniqueId(),
+			content: userQuery,
+			timestamp: Date.now(),
+			sender: "user",
+		};
+
+		const aiAnswer = await ai.processMessage(
+			channelID,
+			message,
+			contextDepth
+		);
+		await telexService.telexResponder(channelID, aiAnswer);
+	} catch (error) {
+		console.error("Error processing AI response:", error);
+		await telexService.telexResponder(
+			payload.channel_id,
+			"Sorry, I encountered an error processing your request."
+		);
 	}
-
-	const channelID = payload.channel_id;
-
-	const userQuery = payload.message.replace(triggerAI, "").trim();
-
-	const message: Message = {
-		id: generateUniqueId(),
-		content: userQuery,
-		timestamp: Date.now(),
-		sender: "user",
-	};
-
-	const aiAnswer = await ai.processMessage(channelID, message, contextDepth);
-	await telexService.telexResponder(channelID, aiAnswer);
 };
 
 app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
@@ -74,13 +86,22 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 	// return res.json({ status: "success", message: message });
 	const payload: ModifierIntegrationPayload = req.body;
 
-	setInterval(() => {
-		AiProcessing(payload);
-	}, 1000);
+	const triggerAI =
+		payload.settings.find((setting) => setting.label === "@telex-ai")
+			?.default || "@telex-ai";
+
+	if (!payload.message.includes(triggerAI)) {
+		res.json({ status: "skipped" });
+	}
 
 	res.json({
 		status: "success",
-		message: payload.message || "Processing...",
+		message: "Processing your request...",
+		event_name: "message_formatted",
+	});
+
+	AiProcessing(payload).catch((error) => {
+		console.error("Failed to process AI response:", error);
 	});
 
 	return;
