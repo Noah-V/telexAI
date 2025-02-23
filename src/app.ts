@@ -60,6 +60,7 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 	}
 
 	const channelID = payload.channel_id;
+	console.log("Channel ID: ", channelID);
 
 	const userQuery = payload.message.replace(triggerAI, "").trim();
 
