@@ -66,40 +66,52 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 
 	// res.json({ status: "success", message: "Processing..." });
 
-	const message: Message = {
-		id: generateUniqueId(),
-		content: userQuery,
-		timestamp: Date.now(),
-		sender: "user",
-	};
+	try {
+		const message: Message = {
+			id: generateUniqueId(),
+			content: userQuery,
+			timestamp: Date.now(),
+			sender: "user",
+		};
 
-	const aiProcessPromise = ai.processMessage(
-		channelID,
-		message,
-		contextDepth
-	);
+		const aiProcessPromise = ai.processMessage(
+			channelID,
+			message,
+			contextDepth
+		);
 
-	const timeoutPromise = new Promise<string | null>((resolve) => {
-		setTimeout(() => resolve(null), 900);
-	});
+		const timeoutPromise = new Promise<string | null>((resolve) => {
+			setTimeout(() => resolve(null), 900);
+		});
 
-	let answer: string | null = await Promise.race([
-		aiProcessPromise,
-		timeoutPromise,
-	]);
+		let answer: string | null = await Promise.race([
+			aiProcessPromise,
+			timeoutPromise,
+		]);
 
-	if (answer !== null) {
-		await telexService.telexResponder(channelID, answer);
-		res.json({ status: "success", message: answer });
-	} else {
-		res.json({ status: "success", message: "Processing..." });
-		aiProcessPromise
-			.then((aiAnswer: string) => {
-				telexService.telexResponder(channelID, aiAnswer);
-				return;
-			})
-			.catch((error) => console.error("AI Processing error: ", error));
+		if (answer !== null) {
+			await telexService.telexResponder(channelID, answer);
+			res.json({ status: "success", message: answer });
+		} else {
+			res.json({ status: "success", message: "Processing..." });
+			aiProcessPromise
+				.then((aiAnswer: string) => {
+					telexService.telexResponder(channelID, aiAnswer);
+					return;
+				})
+				.catch((error) =>
+					console.error("AI Processing error: ", error)
+				);
+		}
+	} catch (error) {
+		console.error("Webhook error: ", error);
+		if (!res.headersSent) {
+			res.status(500).json({
+				status: "error",
+			});
+		}
 	}
+
 	// try {
 	// 	const getAnswer: string = await ai.processMessage(
 	// 		channelID,
