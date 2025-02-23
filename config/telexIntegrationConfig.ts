@@ -24,7 +24,8 @@ export const integrationConfig = {
 			{
 				label: "aiTriggerWord",
 				type: "text",
-				description: "Word to trigger AI responses (default: @noah)",
+				description:
+					"Word to trigger AI responses (default: @telex-ai)",
 				default: "@telex-ai",
 				required: true,
 			},

@@ -55,7 +55,7 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 
 	//const debugMode
 
-	if (!payload.message.includes(triggerAI)) {
+	if (!payload.message.startsWith(triggerAI)) {
 		res.json({ message: payload.message });
 	}
 
