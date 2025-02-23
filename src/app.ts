@@ -45,8 +45,8 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 	const payload: ModifierIntegrationPayload = req.body;
 
 	const triggerAI =
-		payload.settings.find((setting) => setting.label === "@noah")
-			?.default || "@noah";
+		payload.settings.find((setting) => setting.label === "@telex-ai")
+			?.default || "@telex-ai";
 
 	const contextDepth = Number(
 		payload.settings.find((setting) => setting.label === "contextDepth")
