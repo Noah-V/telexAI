@@ -37,13 +37,7 @@ app.listen(port, () => {
 	return console.log(`Express is listening at http://localhost:${port}`);
 });
 
-app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
-	// const { message, settings } = req.body;
-	// console.log("body", req.body);
-	// console.log("settings:", settings);
-	// return res.json({ status: "success", message: message });
-	const payload: ModifierIntegrationPayload = req.body;
-
+const AiProcessing = async (payload: ModifierIntegrationPayload) => {
 	const triggerAI =
 		payload.settings.find((setting) => setting.label === "@telex-ai")
 			?.default || "@telex-ai";
@@ -52,10 +46,6 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 		payload.settings.find((setting) => setting.label === "contextDepth")
 			?.default || 0
 	);
-
-	//const debugMode
-
-	res.json({ status: "success", message: payload.message });
 
 	if (!payload.message.includes(triggerAI)) {
 		console.log("Message does not start with trigger");
@@ -73,14 +63,27 @@ app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
 		sender: "user",
 	};
 
-	ai.processMessage(channelID, message, contextDepth)
-		.then((aiAnswer: string) => {
-			console.log("AI Reply:", aiAnswer);
-			return telexService.telexResponder(channelID, aiAnswer);
-		})
-		.catch((error) => {
-			console.error("Background AI processing error:", error);
-		});
+	const aiAnswer = await ai.processMessage(channelID, message, contextDepth);
+	await telexService.telexResponder(channelID, aiAnswer);
+};
+
+app.post("/webhook", async (req: Request, res: Response): Promise<void> => {
+	// const { message, settings } = req.body;
+	// console.log("body", req.body);
+	// console.log("settings:", settings);
+	// return res.json({ status: "success", message: message });
+	const payload: ModifierIntegrationPayload = req.body;
+
+	setInterval(() => {
+		AiProcessing(payload);
+	}, 1000);
+
+	res.json({
+		status: "success",
+		message: payload.message || "Processing...",
+	});
+
+	return;
 
 	// try {
 	// 	const getAnswer: string = await ai.processMessage(
